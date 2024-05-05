@@ -1,2 +1,2 @@
-# sesssionOne
+# AppiumProject
 Appium Project
