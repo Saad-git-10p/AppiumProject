@@ -20,7 +20,29 @@ public class ProductsPage extends MenuPage {
 
     @AndroidFindBy(xpath = "//android.widget.TextView[@content-desc=\"test-Price\" and @text=\"$29.99\"]")
     private WebElement SLBackpackPrice;
+    @AndroidFindBy(xpath = "//android.view.ViewGroup[@content-desc='test-Modal Selector Button']/android.view.ViewGroup/android.view.ViewGroup/android.widget.ImageView")
+    private WebElement filterButton;
 
+    @AndroidFindBy(xpath = "//android.widget.TextView[@text='Price (low to high)']")
+    private WebElement priceLowToHighOption;
+
+    @AndroidFindBy(xpath = "//android.widget.TextView[@content-desc='test-Item title' and @text='Sauce Labs Onesie']")
+    private WebElement firstProductTitle;
+
+
+
+
+    public void clickFilterButton() {
+        filterButton.click();
+    }
+
+    public void selectPriceLowToHigh() {
+        priceLowToHighOption.click();
+    }
+
+    public String getFirstProductTitle() {
+        return firstProductTitle.getText();
+    }
     public String getTitle() {
         return getText(productHeader, "Product Page Title is: ");
     }
