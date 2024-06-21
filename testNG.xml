@@ -9,8 +9,9 @@
         <parameter name="platformVersion" value="14"/>
         <parameter name="deviceName" value="emulator-5554"/>
         <classes>
-            <class name="com.qa.tests.LoginTest"/>
-            <class name="com.qa.tests.ProductTest"/>
+            <class name="com.qa.tests.LoginLogoutTest"/>
+
+
         </classes>
     </test>
 </suite>

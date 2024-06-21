@@ -1,6 +1,10 @@
 package com.qa.base;
 
 import com.aventstack.extentreports.Status;
+import com.qa.pages.LoginPage;
+import com.qa.pages.MenuPage;
+import com.qa.pages.ProductsPage;
+import com.qa.pages.SettingsPage;
 import com.qa.reports.ExtentReport;
 import com.qa.utils.Utilities;
 import com.qa.utils.ConfigReader;
@@ -9,6 +13,7 @@ import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.InteractsWithApps;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
+import org.json.JSONObject;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -29,23 +34,28 @@ public class AppFactory {
     private static AppiumDriverLocalService server;
     InputStream stringsIs;
     public Utilities utilities = new Utilities();
-
+    protected LoginPage loginPage;
+    protected ProductsPage productPage;
+    protected MenuPage menuPage;
+    protected SettingsPage settingsPage;
+    protected InputStream inputStream;
+    protected JSONObject loginUser;
     @BeforeSuite
-    public void upAndRunningAppiumServer() {
+    public void CheckAppiumServer() {
         server = getAppiumServerDefault();
         if (!utilities.checkIfAppiumServerIsRunning(4723)) {
             server.start();
-            server.clearOutPutStreams(); // This command is used to stop print Appium server's logs into console.
+            server.clearOutPutStreams();
             utilities.log().info("Starting Appium server...");
         } else {
-            utilities.log().info("Appium Server is already up and running...");
+            utilities.log().info("Appium Server is already  running...");
         }
     }
 
     @AfterSuite
     public void shutDownServer() {
         server.stop();
-        utilities.log().info("Shutting down Appium server...");
+        utilities.log().info("Appium server going sleep...");
     }
 
     public AppiumDriverLocalService getAppiumServerDefault() {

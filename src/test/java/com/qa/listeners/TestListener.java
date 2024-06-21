@@ -25,57 +25,25 @@ import java.util.Map;
 public class TestListener implements ITestListener {
 
     @Override
-    public void onTestFailure(ITestResult result) {
-        if (result.getThrowable() != null) {
-            StringWriter stringWriter = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(stringWriter);
-            result.getThrowable().printStackTrace(printWriter);
-            System.out.println(stringWriter.toString());
-        }
-
-        File file = ((TakesScreenshot) AppDriver.getDriver()).getScreenshotAs(OutputType.FILE);
-        byte[] encoded = null;
-        try {
-            encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(file));
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-
-        Map<String, String> params = new HashMap<String, String>();
-        params = result.getTestContext().getCurrentXmlTest().getAllParameters();
-
-        String imagePath = "screenshots" + File.separator + params.get("platformName") + "_" + params.get("platformVersion")
-                + "_" + params.get("deviceName") + File.separator + AppFactory.getDateAndTime() + File.separator
-                + result.getTestClass().getRealClass().getSimpleName() + File.separator + result.getName() + ".png";
-
-        String completeImagePath = System.getProperty("user.dir") + File.separator + imagePath;
-
-        try {
-            FileUtils.copyFile(file, new File(imagePath));
-            Reporter.log("This is the sample screenshot");
-            Reporter.log("<a href='" + completeImagePath + "'> <img src='" + completeImagePath + "' height='100' width='100'/> </a>");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        ExtentReport.getTest().fail("Test Failed",
-                MediaEntityBuilder.createScreenCaptureFromPath(completeImagePath).build());
-        assert encoded != null;
-        ExtentReport.getTest().fail("Test Failed",
-                MediaEntityBuilder.createScreenCaptureFromBase64String(new String(encoded, StandardCharsets.US_ASCII)).build());
-        ExtentReport.getTest().fail(result.getThrowable());
-    }
-
-    @Override
     public void onTestStart(ITestResult result) {
         ExtentReport.startTest(result.getName(), result.getMethod().getDescription())
                 .assignCategory(AppDriver.getPlatform() + " - " + AppDriver.getDeviceName())
-                .assignAuthor("Azfar");
+                .assignAuthor("Saad");
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        ExtentReport.getTest().log(Status.PASS, "Test Passed");
+        ExtentReport.getTest().log(Status.PASS, "Test Passed successfully cheers!!");
+    }
+
+    @Override
+    public void onTestFailure(ITestResult result) {
+        logTestFailure(result);
+        try {
+            takeScreenshotAndAttachToReport(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -85,16 +53,70 @@ public class TestListener implements ITestListener {
 
     @Override
     public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
-        // TODO: Auto-generated method stub
+        // Not implemented
     }
 
     @Override
     public void onStart(ITestContext context) {
-        // TODO: Auto-generated method stub
+        // Not implemented
     }
 
     @Override
     public void onFinish(ITestContext context) {
         ExtentReport.getExtentReports().flush();
+    }
+
+    private void logTestFailure(ITestResult result) {
+        if (result.getThrowable() != null) {
+            StringWriter stringWriter = new StringWriter();
+            result.getThrowable().printStackTrace(new PrintWriter(stringWriter));
+            System.out.println(stringWriter.toString());
+            ExtentReport.getTest().fail(result.getThrowable());
+        }
+    }
+
+    private void takeScreenshotAndAttachToReport(ITestResult result) throws IOException {
+        File screenshotFile = ((TakesScreenshot) AppDriver.getDriver()).getScreenshotAs(OutputType.FILE);
+        String encodedScreenshot = encodeFileToBase64(screenshotFile);
+        String completeImagePath = saveScreenshot(result, screenshotFile);
+
+        ExtentReport.getTest().fail("Test Failed",
+                MediaEntityBuilder.createScreenCaptureFromPath(completeImagePath).build());
+        if (encodedScreenshot != null) {
+            ExtentReport.getTest().fail("Test Failed",
+                    MediaEntityBuilder.createScreenCaptureFromBase64String(encodedScreenshot).build());
+        }
+    }
+
+    private String encodeFileToBase64(File file) {
+        try {
+            byte[] encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(file));
+            return new String(encoded, StandardCharsets.US_ASCII);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String saveScreenshot(ITestResult result, File screenshotFile) {
+        Map<String, String> params = result.getTestContext().getCurrentXmlTest().getAllParameters();
+
+        String imagePath = "screenshots" + File.separator + params.get("platformName") + "_" +
+                params.get("platformVersion") + "_" + params.get("deviceName") + File.separator +
+                AppFactory.getDateAndTime() + File.separator + result.getTestClass().getRealClass().getSimpleName() +
+                File.separator + result.getName() + ".png";
+
+        String completeImagePath = System.getProperty("user.dir") + File.separator + imagePath;
+
+        try {
+            FileUtils.copyFile(screenshotFile, new File(completeImagePath));
+            Reporter.log("This is the sample screenshot");
+            Reporter.log("<a href='" + completeImagePath + "'> <img src='" + completeImagePath +
+                    "' height='100' width='100'/> </a>");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return completeImagePath;
     }
 }
